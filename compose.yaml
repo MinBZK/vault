@@ -1,0 +1,36 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.33.0
+    environment:
+      - DATA_FOLDER=data
+      - WEB_VAULT_ENABLED=true
+      - DATABASE_URL=data/db.sqlite3
+      - ENABLE_WEBSOCKET=true
+      - DOMAIN=http://localhost
+      - SENDS_ALLOWED=true
+      - TRASH_AUTO_DELETE_DAYS=7
+      - SIGNUPS_VERIFY=false
+      - ORG_CREATION_USERS=all
+      - EMAIL_CHANGE_ALLOWED=false
+      - IP_HEADER=X-Real-IP
+      - EXPERIMENTAL_CLIENT_FEATURE_FLAGS=fido2-vault-credentials
+      - DISABLE_ADMIN_TOKEN=true
+      - SMTP_HOST=mailcatcher
+      - SMTP_FROM=vaultwarden@domain.tld
+      - SMTP_FROM_NAME=Vaultwarden
+      - SMTP_PORT=1025
+      - SMTP_SECURITY=off
+      - ROCKET_PORT=8000
+    volumes:
+      - vw-data:/data/
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+  mailcatcher:
+    image: sj26/mailcatcher:v0.10.0
+    ports:
+      - "1080:1080"
+    restart: unless-stopped
+
+volumes:
+  vw-data:

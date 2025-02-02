@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dpl
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vaultwarden
+  template:
+    metadata:
+      labels:
+        app: vaultwarden
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: vaultwarden
+          image: vaultwarden/server:1.33.0
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DATA_FOLDER
+              value: data
+            - name: WEB_VAULT_ENABLED
+              value: "true"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sec
+                  key: DATABASE_URL
+            - name: ENABLE_WEBSOCKET
+              value: "true"
+            - name: DOMAIN
+              value: https://vault.la-suite.apps.digilab.network
+            - name: SENDS_ALLOWED
+              value: "true"
+            - name: TRASH_AUTO_DELETE_DAYS
+              value: "7"
+            - name: SIGNUPS_VERIFY
+              value: "false"
+            - name: ORG_CREATION_USERS
+              valueFrom:
+                secretKeyRef:
+                  name: sec
+                  key: ORG_CREATION_USERS
+            - name: EMAIL_CHANGE_ALLOWED
+              value: "true"
+            - name: IP_HEADER
+              value: X-Forwarded-For
+            - name: EXPERIMENTAL_CLIENT_FEATURE_FLAGS
+              value: fido2-vault-credentials
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: sec
+                  key: ADMIN_TOKEN
+            - name: SMTP_HOST
+              value: "vaultwarden-mailcatcher-svc"
+            - name: SMTP_FROM
+              value: "vaultwarden@vault.la-suite.apps.digilab.network"
+            - name: SMTP_FROM_NAME
+              value: "Vaultwarden"
+            - name: SMTP_PORT
+              value: "1025"
+            - name: SMTP_SECURITY
+              value: "off"
+            - name: ROCKET_PORT
+              value: "8000"
+          volumeMounts:
+            - name: pv-storage
+              mountPath: /data
+      volumes:
+      - name: pv-storage
+        persistentVolumeClaim:
+          claimName: pvc
