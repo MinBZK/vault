@@ -72,6 +72,10 @@ spec:
           volumeMounts:
             - name: pv-storage
               mountPath: /data
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
       volumes:
       - name: pv-storage
         persistentVolumeClaim:
